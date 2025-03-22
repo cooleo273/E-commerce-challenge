@@ -1,28 +1,23 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createPaymentIntent } from "@/lib/stripe"
 import { getSession } from "@/lib/auth"
 import { getCart } from "@/lib/db"
+import { initializePayment } from "@/lib/chapa"
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const session = await getSession()
 
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
     }
 
     // Get cart to calculate total
     const cart = await getCart(session.id)
 
     // Calculate total
-    interface CartItem {
-      product: {
-        price: number;
-        discount?: number | null;
-      };
-      quantity: number;
-    }
-
     const subtotal = cart.items.reduce((sum: number, item: CartItem) => {
       const price = item.product.price * (1 - (item.product.discount || 0) / 100);
       return sum + price * item.quantity;
@@ -32,24 +27,47 @@ export async function POST(request: NextRequest) {
     const shippingFee = subtotal > 100 ? 0 : 10
     const total = subtotal + shippingFee
 
-    // Create payment intent
-    const result = await createPaymentIntent(total, {
-      userId: session.id,
-      cartId: cart.id,
+    // Initialize Chapa payment
+    const payment = await initializePayment({
+      amount: total,
+      currency: "ETB",
+      email: session.email,
+      firstName: session.name?.split(" ")[0] || "",
+      lastName: session.name?.split(" ").slice(1).join(" ") || "",
+      txRef: `order-${Date.now()}`,
+      callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/chapa/webhook`,
+      metadata: {
+        userId: session.id,
+        cartId: cart.id,
+      },
     })
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 })
+    if (!payment.success) {
+      return NextResponse.json(
+        { error: payment.error },
+        { status: 400 }
+      )
     }
 
     return NextResponse.json({
-      clientSecret: result.clientSecret,
-      paymentIntentId: result.paymentIntentId,
-      amount: total,
+      success: true,
+      checkoutUrl: payment.checkoutUrl,
     })
-  } catch (error) {
-    console.error("Error creating payment intent:", error)
-    return NextResponse.json({ error: "Failed to create payment intent" }, { status: 500 })
+
+  } catch (error: any) {
+    console.error("Payment intent error:", error)
+    return NextResponse.json(
+      { error: error.message || "Failed to create payment intent" },
+      { status: 500 }
+    )
   }
+}
+
+interface CartItem {
+  product: {
+    price: number;
+    discount?: number | null;
+  };
+  quantity: number;
 }
 
