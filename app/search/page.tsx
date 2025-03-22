@@ -1,7 +1,8 @@
 import { Suspense } from "react"
 import { fuzzySearch } from "@/lib/search"
-import ProductCard from "@/components/product-card"
+
 import type { Metadata } from "next"
+import ProductCard from "@/components/product-card"
 
 interface SearchPageProps {
   searchParams: {
@@ -39,7 +40,15 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
 async function SearchResults({ query }: { query: string }) {
   const results = await fuzzySearch(query)
 
-  if (results.length === 0) {
+  // Transform the results to match the ProductCard interface
+  const products = results.map(product => ({
+    ...product,
+    images: ["/placeholder.jpg"],
+    inventory: 10,
+    category: product.category.name, // Extract the category name string
+  }))
+
+  if (products.length === 0) {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-medium mb-2">No results found</h2>
@@ -52,10 +61,10 @@ async function SearchResults({ query }: { query: string }) {
 
   return (
     <div>
-      <p className="text-gray-500 mb-4">Found {results.length} results</p>
+      <p className="text-gray-500 mb-4">Found {products.length} results</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {results.map((product) => (
+        {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
