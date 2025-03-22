@@ -9,7 +9,6 @@ import { RecommendedProducts } from "@/components/recommended-products"
 import { Suspense } from "react"
 import { UserNav } from "@/components/user-nav"
 
-
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -28,7 +27,7 @@ export default function Home() {
                 <span className="sr-only">Cart</span>
               </Button>
             </Link>
-            <UserNav/>
+            <UserNav />
           </div>
         </div>
       </header>
@@ -45,7 +44,7 @@ export default function Home() {
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex items-center">
-              <div className="container px-4">
+              <div className="container mx-auto px-4">
                 <div className="max-w-xl text-white space-y-6">
                   <h1 className="text-5xl font-bold leading-tight">Step Into Style & Comfort</h1>
                   <p className="text-xl opacity-90">
@@ -72,7 +71,7 @@ export default function Home() {
 
         {/* Categories Section */}
         <section className="py-16 bg-muted/30">
-          <div className="container px-4">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">Shop By Category</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
@@ -117,11 +116,13 @@ export default function Home() {
 
         {/* Featured Products Section */}
         <section className="py-16">
-          <div className="container px-4">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">Featured Products</h2>
-          <Suspense fallback={<ProductListSkeleton />}>
-        <ProductList />
-      </Suspense>
+            <div className="w-full">
+              <Suspense fallback={<ProductListSkeleton />}>
+                <ProductList />
+              </Suspense>
+            </div>
             <div className="mt-8 text-center">
               <Button variant="outline" size="lg" asChild>
                 <Link href="/products">View All Products</Link>
@@ -132,14 +133,14 @@ export default function Home() {
 
         {/* Recommended Products Section */}
         <section className="py-16 bg-muted/30">
-          <div className="container px-4">
+          <div className="container mx-auto px-4">
             <RecommendedProducts />
           </div>
         </section>
 
         {/* Brand Showcase */}
         <section className="py-16">
-          <div className="container px-4">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">Our Brands</h2>
             <div className="flex flex-wrap justify-center items-center gap-12">
               {["Nike", "Adidas", "Puma", "New Balance", "Reebok", "Converse"].map((brand) => (
@@ -153,7 +154,7 @@ export default function Home() {
 
         {/* Testimonials */}
         <section className="py-16 bg-primary text-primary-foreground">
-          <div className="container px-4">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">What Our Customers Say</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
@@ -181,7 +182,10 @@ export default function Home() {
                       .map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-4 w-4 ${i < testimonial.rating ? "fill-primary-foreground text-primary-foreground" : "text-primary-foreground/30"}`}
+                          className={`h-4 w-4 ${i < testimonial.rating
+                            ? "fill-primary-foreground text-primary-foreground"
+                            : "text-primary-foreground/30"
+                            }`}
                         />
                       ))}
                   </div>
@@ -195,7 +199,7 @@ export default function Home() {
 
         {/* Newsletter */}
         <section className="py-16">
-          <div className="container px-4">
+          <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-4">Join Our Newsletter</h2>
               <p className="text-muted-foreground mb-6">
@@ -211,7 +215,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t py-6">
-        <div className="container px-4">
+        <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-sm text-muted-foreground">© 2025 BR. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
@@ -231,4 +235,3 @@ export default function Home() {
     </div>
   )
 }
-
