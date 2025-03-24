@@ -14,6 +14,7 @@ import { Metadata } from 'next';
 import AddToCart from "@/components/add-to-cart";
 import AddToWishlist from "@/components/add-to-wishlist";
 import prisma from "@/lib/prisma";
+import { PageMainNav } from "@/components/page-main-nav";
 
 // Fetch real product data from the database
 async function getProductById(id: string) {
@@ -64,6 +65,7 @@ export default async function ProductPage({ params }: PageProps) {
             BR<span className="text-primary">.</span>
           </Link>
           <MainNav className="mx-6" />
+          <PageMainNav/>
           <div className="ml-auto flex items-center space-x-4">
             <Link href="/favorites">
               <Button variant="ghost" size="icon">
@@ -82,7 +84,7 @@ export default async function ProductPage({ params }: PageProps) {
       </header>
 
       <main className="flex-1 py-8">
-        <div className="container px-4">
+        <div className="container px-4 mx-auto">
           {/* Breadcrumb navigation */}
           <nav className="mb-6 text-sm">
             <ol className="flex items-center space-x-2">
