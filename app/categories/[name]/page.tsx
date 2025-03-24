@@ -7,6 +7,13 @@ interface CategoryPageProps {
   params: {
     name: string
   }
+  searchParams: {
+    minPrice?: string
+    maxPrice?: string
+    brands?: string
+    size?: string
+    search?: string
+  }
 }
 
 interface Category {
@@ -34,7 +41,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   }
 }
 
-export default async function CategoryDetailPage({ params }: CategoryPageProps) {
+export default async function CategoryDetailPage({ params, searchParams }: CategoryPageProps) {
   const resolvedParams = await params
   const categories = await getCategories()
   const category = categories.find(
@@ -45,21 +52,28 @@ export default async function CategoryDetailPage({ params }: CategoryPageProps) 
     notFound()
   }
 
-  // Fetch products for this category
+  // Parse search params
+  const minPrice = searchParams.minPrice ? parseFloat(searchParams.minPrice) : undefined
+  const maxPrice = searchParams.maxPrice ? parseFloat(searchParams.maxPrice) : undefined
+  const brand = searchParams.brands || undefined
+  const size = searchParams.size || undefined
+
+  // Fetch products with filters
   const { products } = await getProducts({
     categoryId: category.id,
+    minPrice,
+    maxPrice,
+    brand,
+    size,
     limit: 24,
   })
-
-  // Add console.log to debug
-  console.log(`Found ${products.length} products for category ${category.name}`)
 
   return (
     <CategoryPage
       title={category.name}
       description={`Explore our ${category.name.toLowerCase()} collection and find your perfect style.`}
       category={category.id}
-      products={products} // Make sure we're passing the products array
+      products={products}
     />
   )
 }

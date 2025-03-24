@@ -15,23 +15,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(product)
     }
 
-    const category = searchParams.get("category")
-    const brand = searchParams.get("brand")
+    const categoryId = searchParams.get("categoryId") || undefined
+    const brand = searchParams.get("brand") || undefined
     const search = searchParams.get("search")
-    const sort = searchParams.get("sort")
-    const minPrice = searchParams.get("minPrice") ? Number.parseFloat(searchParams.get("minPrice")!) : undefined
-    const maxPrice = searchParams.get("maxPrice") ? Number.parseFloat(searchParams.get("maxPrice")!) : undefined
+    // const sort = searchParams.get("sort")
+    // const minPrice = searchParams.get("minPrice") ? Number.parseFloat(searchParams.get("minPrice")!) : undefined
+    // const maxPrice = searchParams.get("maxPrice") ? Number.parseFloat(searchParams.get("maxPrice")!) : undefined
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "20")
     const offset = (page - 1) * limit
 
     const result = await getProducts({
-      category,
+      categoryId,
       brand,
-      search,
-      minPrice,
-      maxPrice,
-      sort,
+      searchQuery: search || undefined,  // Convert null to undefined
       limit,
       offset,
     })

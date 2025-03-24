@@ -13,7 +13,7 @@ import { AlertCircle } from "lucide-react"
 
 export default function SignupPage() {
   const router = useRouter()
-  const { signup, isAuthenticated } = useAuth()
+  const { register, isAuthenticated } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   
@@ -35,7 +35,7 @@ export default function SignupPage() {
     const password = formData.get("password") as string
     
     try {
-      await signup(name, email, password)
+      await register(name, email, password)
       router.push("/login?success=Account created successfully! Please log in.")
     } catch (error) {
       setError(error instanceof Error ? error.message : "Failed to create account")

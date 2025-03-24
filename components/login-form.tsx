@@ -89,8 +89,8 @@ export default function LoginForm({ callbackUrl }: LoginFormProps) {
           </Button>
           <p className="text-sm text-center text-gray-600">
             Don't have an account?{" "}
-            <Link href="/register" className="text-blue-600 hover:underline">
-              Register
+            <Link href="/signup" className="text-blue-600 hover:underline">
+              Signup
             </Link>
           </p>
         </CardFooter>

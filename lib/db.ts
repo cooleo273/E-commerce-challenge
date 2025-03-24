@@ -105,11 +105,19 @@ import {
 export async function getProducts({
   categoryId,
   searchQuery,
+  brand,
+  minPrice,
+  maxPrice,
+  size,
   limit = 24,
   offset = 0,
 }: {
   categoryId?: string
   searchQuery?: string
+  brand?: string
+  minPrice?: number
+  maxPrice?: number
+  size?: string
   limit?: number
   offset?: number
 }) {
@@ -118,6 +126,10 @@ export async function getProducts({
       where: {
         AND: [
           categoryId ? { categoryId } : {},
+          brand ? { brandId: brand } : {},
+          minPrice !== undefined ? { price: { gte: minPrice } } : {},
+          maxPrice !== undefined ? { price: { lte: maxPrice } } : {},
+          size ? { sizes: { some: { name: size } } } : {},
           searchQuery ? {
             OR: [
               { name: { contains: searchQuery, mode: 'insensitive' } },
@@ -131,12 +143,17 @@ export async function getProducts({
       include: {
         category: true,
         brand: true,
+        sizes: true,
       },
     }),
     prisma.product.count({
       where: {
         AND: [
           categoryId ? { categoryId } : {},
+          brand ? { brandId: brand } : {},
+          minPrice !== undefined ? { price: { gte: minPrice } } : {},
+          maxPrice !== undefined ? { price: { lte: maxPrice } } : {},
+          size ? { sizes: { some: { name: size } } } : {},
           searchQuery ? {
             OR: [
               { name: { contains: searchQuery, mode: 'insensitive' } },
@@ -150,7 +167,6 @@ export async function getProducts({
 
   return { products, count }
 }
-// Get a single product with caching
 export async function getProduct(id: string) {
   return getCachedProduct(id, async () => {
     return prisma.product.findUnique({
