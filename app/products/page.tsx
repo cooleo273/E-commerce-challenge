@@ -6,6 +6,7 @@ import { ProductGrid } from "@/components/product-grid"
 import { CategoryFilter } from "@/components/category-filter"
 import { PageMainNav } from "@/components/page-main-nav"
 import { getProducts } from "@/lib/db"
+import { Suspense } from 'react'
 
 // Make the component async to fetch products
 export default async function ProductsPage() {
@@ -82,7 +83,9 @@ export default async function ProductsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="hidden md:block">
-                <CategoryFilter />
+                <Suspense fallback={<div>Loading filters...</div>}>
+                  <CategoryFilter />
+                </Suspense>
               </div>
               <div className="md:col-span-3">
                 <ProductGrid products={products} limit={24} />
