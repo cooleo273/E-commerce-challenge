@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       firstName,
       lastName,
       txRef,
-      callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/chapa/webhook`,
+      callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}`,
       customization: {
         title: "BR Store", // Shortened to meet 16-character limit
         description: `Order ${txRef}`,
