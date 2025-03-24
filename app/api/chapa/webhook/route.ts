@@ -6,6 +6,8 @@ import prisma from "@/lib/prisma"
 export async function POST(request: Request) {
   try {
     const body = await request.text()
+    console.log("Webhook body:", body)
+    console.log("Webhook headers:", await headers())
     const headersList = await headers()
     const signature = headersList.get("x-chapa-signature")
 
