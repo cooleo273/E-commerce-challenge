@@ -16,11 +16,33 @@ export default async function AdminProductsPage({
   const search = searchParamsData?.search || ""
   const limit = 10
 
-  const { products, total, pageCount } = await getProducts({
-    search,
+  // Update the getProducts call to include count and search
+  const { products, count } = await getProducts({
+    searchQuery: search,
     limit,
     offset: (page - 1) * limit,
   })
+  
+  // Calculate total pages
+  const pageCount = Math.ceil(count / limit)
+  
+  // Update the Product interface in types.ts
+  interface Product {
+    id: string
+    name: string
+    price: number
+    images: string[]
+    inventory: number
+    discount: number | null // Change from undefined to null to match DB
+    category: {
+      id: string
+      name: string
+    }
+    brand: {
+      id: string
+      name: string
+    }
+  }
 
   return (
     <div className="p-6 bg-gray-50">
@@ -147,8 +169,8 @@ export default async function AdminProductsPage({
         <div className="flex justify-between items-center mt-8">
           <div className="text-sm text-gray-700">
             Showing <span className="font-medium">{(page - 1) * limit + 1}</span> to{" "}
-            <span className="font-medium">{Math.min(page * limit, total)}</span> of{" "}
-            <span className="font-medium">{total}</span> products
+            <span className="font-medium">{Math.min(page * limit, count)}</span> of{" "}
+            <span className="font-medium">{count}</span> products
           </div>
           <div className="flex space-x-3">
             {page > 1 && (
