@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCart } from "@/lib/cart-context";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddToCartProps {
   productId: string;
@@ -12,12 +13,38 @@ interface AddToCartProps {
 export default function AddToCart({ productId, color, size }: AddToCartProps) {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { addItem } = useCart();
+  const { toast } = useToast();
 
   async function handleAddToCart() {
+    if (loading) return;
+    
     try {
       setLoading(true);
-      const response = await fetch("/api/cart", {
+      
+      const productResponse = await fetch(`/api/products/${productId}`);
+      const productData = await productResponse.json();
+      
+      if (!productResponse.ok || !productData) {
+        throw new Error("Failed to fetch product details");
+      }
+
+      // Create cart item object
+      const cartItem = {
+        productId,
+        name: productData.name,
+        price: Number(productData.price),
+        image: productData.images?.[0] || "/placeholder.svg",
+        quantity,
+        color: color || "default",
+        size: size || "default",
+      };
+
+      // Update context first for immediate UI update
+      addItem(cartItem);
+
+      // Then sync with backend
+      const cartResponse = await fetch("/api/cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,13 +57,23 @@ export default function AddToCart({ productId, color, size }: AddToCartProps) {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to add to cart");
+      if (!cartResponse.ok) {
+        const cartData = await cartResponse.json();
+        throw new Error(cartData.error || "Failed to add to cart");
       }
 
-      router.refresh();
+      toast({
+        title: "Added to cart",
+        description: `${productData.name} has been added to your cart.`,
+      });
+
     } catch (error) {
       console.error("Error adding to cart:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add item to cart",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
