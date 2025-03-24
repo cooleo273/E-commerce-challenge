@@ -20,7 +20,7 @@ export default function Home() {
             BR<span className="text-primary">.</span>
           </Link>
           <MainNav className="mx-6" />
-          <PageMainNav/>
+          {/* <PageMainNav/> */}
           <div className="ml-auto flex items-center space-x-4">
             <WishlistIcon />
             <Link href="/cart">
