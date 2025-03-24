@@ -11,6 +11,7 @@ import { useCart } from "@/lib/cart-context"
 import { getProductById } from "@/lib/products"
 import { useToast } from "@/hooks/use-toast"
 import { PageMainNav } from "@/components/page-main-nav"
+import { WishlistItems } from "@/components/wishlist-items"
 
 // Define the interface for wishlist items
 interface WishlistItem {
@@ -119,62 +120,7 @@ export default function FavoritesPage() {
       <main className="flex-1 py-8">
         <div className="container px-4">
           <h1 className="text-3xl font-bold mb-8">My Wishlist</h1>
-
-          {isLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="ml-2">Loading your wishlist...</span>
-            </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <h2 className="text-xl font-medium mb-4 text-red-500">{error}</h2>
-              <Button onClick={() => window.location.reload()}>Try Again</Button>
-            </div>
-          ) : wishlistItems.length === 0 ? (
-            <div className="text-center py-12">
-              <h2 className="text-xl font-medium mb-4">Your wishlist is empty</h2>
-              <p className="text-muted-foreground mb-6">Save items you love to your wishlist.</p>
-              <Button asChild>
-                <Link href="/products">Browse Products</Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {wishlistItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="border rounded-lg p-4 flex flex-col sm:flex-row gap-4"
-                  data-wishlist-id={item.id}
-                  data-wishlist-product-id={item.productId}
-                >
-                  <div className="w-full sm:w-40 h-40 relative">
-                    <Image
-                      src={item.product?.images?.[0] || "/placeholder.svg"}
-                      alt={item.product?.name || "Product"}
-                      fill
-                      className="object-cover rounded-md"
-                    />
-                  </div>
-                  <div className="flex-1 flex flex-col">
-                    <h3 className="font-medium text-lg">{item.product?.name}</h3>
-                    <p className="font-bold mt-2">
-                      ${(item.product?.price || 0).toFixed(2)}
-                    </p>
-                    <div className="mt-auto pt-4 flex flex-col sm:flex-row gap-2">
-                      <Button className="sm:w-auto" onClick={() => handleAddToCart(item.productId)}>
-                        <ShoppingBag className="mr-2 h-4 w-4" />
-                        Add to Cart
-                      </Button>
-                      <Button variant="outline" className="sm:w-auto" onClick={() => handleRemoveItem(item.productId)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <WishlistItems />
         </div>
       </main>
 
