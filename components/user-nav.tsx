@@ -1,9 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
 import { User, LogOut, Settings, ShoppingBag, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,25 +12,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/lib/auth-context"
 
 export function UserNav() {
-  // This is a placeholder for authentication state
-  // In a real app, you would use your auth context here
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  
-  // Placeholder user data
-  const user = isAuthenticated ? {
-    name: "User Name",
-    email: "user@example.com"
-  } : null
+  const { user, isAuthenticated, logout } = useAuth()
 
-  // Placeholder logout function
-  const handleLogout = () => {
-    setIsAuthenticated(false)
-    // In a real app, you would call your logout API here
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" asChild>
@@ -43,22 +38,23 @@ export function UserNav() {
     )
   }
 
-  // At this point, we know isAuthenticated is true, so user cannot be null
-  const userData = user!; // Non-null assertion
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative rounded-full">
-          <User className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-primary/10">
+              {user.name ? getInitials(user.name) : 'U'}
+            </AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{userData.name}</p>
+            <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {userData.email}
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -82,7 +78,7 @@ export function UserNav() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+        <DropdownMenuItem onClick={logout} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>
