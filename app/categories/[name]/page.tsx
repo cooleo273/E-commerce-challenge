@@ -43,6 +43,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryDetailPage({ params, searchParams }: CategoryPageProps) {
   const resolvedParams = await params
+  const resolvedSearchParams = await searchParams
   const categories = await getCategories()
   const category = categories.find(
     (cat: Category) => cat.name.toLowerCase() === resolvedParams.name.toLowerCase()
@@ -53,10 +54,10 @@ export default async function CategoryDetailPage({ params, searchParams }: Categ
   }
 
   // Parse search params
-  const minPrice = searchParams.minPrice ? parseFloat(searchParams.minPrice) : undefined
-  const maxPrice = searchParams.maxPrice ? parseFloat(searchParams.maxPrice) : undefined
-  const brand = searchParams.brands || undefined
-  const size = searchParams.size || undefined
+  const minPrice = resolvedSearchParams.minPrice ? parseFloat(resolvedSearchParams.minPrice) : undefined
+  const maxPrice = resolvedSearchParams.maxPrice ? parseFloat(resolvedSearchParams.maxPrice) : undefined
+  const brand = resolvedSearchParams.brands || undefined
+  const size = resolvedSearchParams.size || undefined
 
   // Fetch products with filters
   const { products } = await getProducts({
