@@ -12,6 +12,7 @@ import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 import { generateTxRef } from "@/lib/chapa"
+import { PageMainNav } from "@/components/page-main-nav"
 
 export default function CartPage() {
   const router = useRouter()
@@ -69,6 +70,7 @@ export default function CartPage() {
             BR<span className="text-black">.</span>
           </Link>
           <MainNav className="mx-6" />
+          <PageMainNav/>
         </div>
       </header>
 
