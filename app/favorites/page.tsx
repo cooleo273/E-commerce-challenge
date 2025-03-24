@@ -10,6 +10,7 @@ import { useWishlist } from "@/lib/wishlist-context"
 import { useCart } from "@/lib/cart-context"
 import { getProductById } from "@/lib/products"
 import { useToast } from "@/hooks/use-toast"
+import { PageMainNav } from "@/components/page-main-nav"
 
 // Define the interface for wishlist items
 interface WishlistItem {
@@ -111,6 +112,7 @@ export default function FavoritesPage() {
             BR<span className="text-primary">.</span>
           </Link>
           <MainNav className="mx-6" />
+          <PageMainNav/>
         </div>
       </header>
 
