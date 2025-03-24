@@ -12,7 +12,13 @@ export async function GET(
 ) {
   try {
     const categoryName = params.name
-    console.log('Searching for category:', categoryName)
+    const { searchParams } = new URL(request.url)
+    
+    // Get and parse filter parameters
+    const minPrice = searchParams.get("minPrice") ? parseFloat(searchParams.get("minPrice")!) : undefined
+    const maxPrice = searchParams.get("maxPrice") ? parseFloat(searchParams.get("maxPrice")!) : undefined
+    const brand = searchParams.get("brands") || undefined
+    const size = searchParams.get("size") || undefined
     
     // First get the category
     const categories = await getCategories()
@@ -21,16 +27,18 @@ export async function GET(
     )
 
     if (!category) {
-      console.log('No category found')
       return NextResponse.json({ products: [] })
     }
 
-    // Get products filtered by categoryId
+    // Get products with all filters
     const { products } = await getProducts({
       categoryId: category.id,
+      brand,
+      minPrice,
+      maxPrice,
+      size,
       limit: 24,
     })
-    console.log(`Found ${products.length} products for category ${category.name}`)
 
     return NextResponse.json({ products })
   } catch (error) {
