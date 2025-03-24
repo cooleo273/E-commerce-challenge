@@ -41,7 +41,17 @@ const TAX_RATE = 0.15 // 15% tax rate
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isMobile, setIsMobile] = useState(false)
+  const [loading, setLoading] = useState(true)
   const { isAuthenticated } = useAuth()
+
+  // Add local storage cache
+  useEffect(() => {
+    const cachedCart = localStorage.getItem('cartItems')
+    if (cachedCart) {
+      setItems(JSON.parse(cachedCart))
+      setLoading(false)
+    }
+  }, [])
 
   // Handle responsive design
   useEffect(() => {
@@ -54,27 +64,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Fetch cart from API
-  const fetchCart = async () => {
-    // Skip fetching if not authenticated
+  // Fetch cart from API with debounce
+  const fetchCart = useCallback(async () => {
     if (!isAuthenticated) {
       setItems([])
       return
     }
 
     try {
-      const response = await fetch("/api/cart")
+      const response = await fetch("/api/cart", {
+        cache: 'no-store' // Disable caching for fresh data
+      })
       
       if (!response.ok) {
         throw new Error("Failed to fetch cart")
       }
       
       const data = await response.json()
-      
-      // Check if data is an array, if not, look for items property or use empty array
       const cartData = Array.isArray(data) ? data : (data.items || [])
       
-      // Transform the data to match our CartItem interface
       const cartItems = cartData.map((item: any) => ({
         id: item.id,
         productId: item.productId,
@@ -90,19 +98,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }))
       
       setItems(cartItems)
+      localStorage.setItem('cartItems', JSON.stringify(cartItems))
     } catch (error) {
       console.error("Error fetching cart:", error)
-      // Set empty array on error instead of throwing
       setItems([])
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [isAuthenticated])
 
   // Load cart when authentication state changes
   useEffect(() => {
-    fetchCart().catch(console.error)
-  }, [isAuthenticated])
+    fetchCart()
+  }, [isAuthenticated, fetchCart])
 
-  // Add item to cart
+  // Add item to cart with optimistic update
   const addItem = async (newItem: Omit<CartItem, "id">) => {
     if (!isAuthenticated) {
       throw new Error("You must be logged in to add items to cart")
@@ -120,16 +130,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           size: newItem.size,
           color: newItem.color
         }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error("Failed to add item to cart");
+        throw new Error("Failed to add item to cart")
       }
 
-      await fetchCart(); // Refresh the cart after adding
+      const data = await response.json()
+      
+      // Update local state with the actual server response
+      setItems(prev => {
+        const updated = [...prev, {
+          id: data.id,
+          ...newItem
+        }]
+        localStorage.setItem('cartItems', JSON.stringify(updated))
+        return updated
+      })
+
     } catch (error) {
-      console.error("Error adding item to cart:", error);
-      throw error;
+      console.error("Error adding to cart:", error)
+      throw error
     }
   }
 
