@@ -4,8 +4,14 @@ import { Button } from "@/components/ui/button"
 import { MainNav } from "@/components/main-nav"
 import { ProductGrid } from "@/components/product-grid"
 import { CategoryFilter } from "@/components/category-filter"
+import { PageMainNav } from "@/components/page-main-nav"
+import { getProducts } from "@/lib/db"
 
-export default function ProductsPage() {
+// Make the component async to fetch products
+export default async function ProductsPage() {
+  // Fetch products
+  const { products } = await getProducts({ limit: 24 })
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b">
@@ -14,6 +20,7 @@ export default function ProductsPage() {
             BR<span className="text-primary">.</span>
           </Link>
           <MainNav className="mx-6" />
+          <PageMainNav/>
           <div className="ml-auto flex items-center space-x-4">
             <Link href="/favorites">
               <Button variant="ghost" size="icon">
@@ -78,7 +85,7 @@ export default function ProductsPage() {
                 <CategoryFilter />
               </div>
               <div className="md:col-span-3">
-                <ProductGrid limit={24} />
+                <ProductGrid products={products} limit={24} />
               </div>
             </div>
           </div>
@@ -86,7 +93,7 @@ export default function ProductsPage() {
       </main>
 
       <footer className="border-t py-6 mt-12">
-        <div className="container px-4">
+        <div className="container px-4 mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h3 className="font-semibold mb-4">Company</h3>
