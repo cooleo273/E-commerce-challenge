@@ -2,26 +2,19 @@ import Image from "next/image"
 import Link from "next/link"
 import { Star } from "lucide-react"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { getAllProducts } from "@/lib/products"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface ProductGridProps {
-  category?: string
+  products: any[]
   limit?: number
 }
 
-export async function ProductGrid({ category, limit = 24 }: ProductGridProps) {
-  // Fetch products
-  const products = await getAllProducts()
-  
-  // Filter products by category if provided
-  const filteredProducts = category
-    ? products.filter((product) => product.category.name === category).slice(0, limit)
-    : products.slice(0, limit)
+export function ProductGrid({ products, limit = 24 }: ProductGridProps) {
+  const displayProducts = products.slice(0, limit)
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-      {filteredProducts.map((product) => (
+      {displayProducts.map((product) => (
         <Link key={product.id} href={`/products/${product.id}`}>
           <Card className="h-full overflow-hidden border-0 shadow-sm transition-all hover:shadow-md">
             <CardContent className="p-4">
@@ -79,7 +72,7 @@ export async function ProductGrid({ category, limit = 24 }: ProductGridProps) {
   )
 }
 
-// Add a skeleton loader component for ProductGrid
+// ProductGridSkeleton component remains unchanged
 export function ProductGridSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">

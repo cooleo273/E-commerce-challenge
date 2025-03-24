@@ -1,104 +1,122 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { useRouter } from "next/navigation"
+import type React from "react"
 
-interface User {
+import { createContext, useContext, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { logoutUser } from "./auth"
+
+type User = {
   id: string
   name: string | null
   email: string
   role: string
 }
 
-interface AuthContextType {
+type AuthContextType = {
   user: User | null
   isLoading: boolean
-  isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<void>
-  signup: (name: string, email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => Promise<void>
+  isAuthenticated: boolean
+  isAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
 
-  // Check if user is logged in on initial load
   useEffect(() => {
-    async function loadUserFromSession() {
+    async function checkSession() {
       try {
-        const response = await fetch("/api/auth/me")
-        if (response.ok) {
-          const data = await response.json()
-          setUser(data.user)
+        const response = await fetch('/api/auth/session')
+        const data = await response.json()
+        
+        if (data && data.role === 'ADMIN') {
+          setIsAuthenticated(true)
+          setUser(data)
+        } else {
+          setIsAuthenticated(false)
+          setUser(null)
+          // router.push('/admin/login')
         }
+        setIsLoading(false)
       } catch (error) {
-        console.error("Failed to load user session:", error)
-      } finally {
+        console.error('Session check failed:', error)
+        setIsAuthenticated(false)
+        setUser(null)
+        // router.push('/admin/login')
         setIsLoading(false)
       }
     }
-
-    loadUserFromSession()
-  }, [])
+  
+    checkSession()
+  }, [router])
 
   // Login function
   const login = async (email: string, password: string) => {
-    setIsLoading(true)
     try {
-      const response = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email, password }),
       })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "Login failed")
+      const data = await res.json()
+
+      if (!res.ok) {
+        return { success: false, error: data.error || "Login failed" }
       }
 
-      const data = await response.json()
-      setUser(data.user)
-      router.refresh()
-    } finally {
-      setIsLoading(false)
+      setUser(data)
+      return { success: true }
+    } catch (error) {
+      console.error("Login error:", error)
+      return { success: false, error: "An unexpected error occurred" }
     }
   }
 
-  // Signup function
-  const signup = async (name: string, email: string, password: string) => {
-    setIsLoading(true)
+  // Register function
+  const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await fetch("/api/auth/register", {
+      const res = await fetch("/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ name, email, password }),
       })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "Signup failed")
+      const data = await res.json()
+
+      if (!res.ok) {
+        return { success: false, error: data.error || "Registration failed" }
       }
 
-      router.push("/login?success=Account created successfully! Please log in.")
-    } finally {
-      setIsLoading(false)
+      return { success: true }
+    } catch (error) {
+      console.error("Registration error:", error)
+      return { success: false, error: "An unexpected error occurred" }
     }
   }
 
   // Logout function
   const logout = async () => {
-    setIsLoading(true)
     try {
-      await fetch("/api/auth/logout", { method: "POST" })
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      })
       setUser(null)
-      router.refresh()
-      router.push("/login")
-    } finally {
-      setIsLoading(false)
+      router.push("/")
+    } catch (error) {
+      console.error("Logout error:", error)
     }
   }
 
@@ -107,10 +125,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isLoading,
-        isAuthenticated: !!user,
         login,
-        signup,
+        register,
         logout,
+        isAuthenticated,
+        isAdmin: user?.role === "ADMIN",
       }}
     >
       {children}
@@ -120,9 +139,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
+
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider")
   }
+
   return context
 }
 

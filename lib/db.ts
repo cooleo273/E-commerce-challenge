@@ -12,97 +12,144 @@ import {
 
 // Products
 // Get products with caching
-export async function getProducts(
-  options: {
-    category?: string | null
-    brand?: string | null
-    search?: string | null
-    minPrice?: number
-    maxPrice?: number
-    sort?: string | null
-    limit?: number
-    offset?: number
-  } = {},
-) {
-  // Create a cache key based on the options
-  const cacheKey = `products:${JSON.stringify(options)}`
+// export async function getProducts(
+//   options: {
+//     category?: string | null
+//     brand?: string | null
+//     search?: string | null
+//     minPrice?: number
+//     maxPrice?: number
+//     sort?: string | null
+//     limit?: number
+//     offset?: number
+//   } = {},
+// ) {
+//   // Create a cache key based on the options
+//   const cacheKey = `products:${JSON.stringify(options)}`
 
-  return getCachedProducts(cacheKey, async () => {
-    // Your existing getProducts implementation
-    const { category, brand, search, minPrice, maxPrice, sort = "newest", limit = 20, offset = 0 } = options
+//   return getCachedProducts(cacheKey, async () => {
+//     // Your existing getProducts implementation
+//     const { category, brand, search, minPrice, maxPrice, sort = "newest", limit = 20, offset = 0 } = options
 
-    const where: any = {}
+//     const where: any = {}
 
-    if (category) {
-      where.category = {
-        name: category,
-      }
-    }
+//     if (category) {
+//       where.category = {
+//         name: category,
+//       }
+//     }
 
-    if (brand) {
-      where.brand = {
-        name: brand,
-      }
-    }
+//     if (brand) {
+//       where.brand = {
+//         name: brand,
+//       }
+//     }
 
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-      ]
-    }
+//     if (search) {
+//       where.OR = [
+//         { name: { contains: search, mode: "insensitive" } },
+//         { description: { contains: search, mode: "insensitive" } },
+//       ]
+//     }
 
-    if (minPrice !== undefined) {
-      where.price = {
-        ...where.price,
-        gte: minPrice,
-      }
-    }
+//     if (minPrice !== undefined) {
+//       where.price = {
+//         ...where.price,
+//         gte: minPrice,
+//       }
+//     }
 
-    if (maxPrice !== undefined) {
-      where.price = {
-        ...where.price,
-        lte: maxPrice,
-      }
-    }
+//     if (maxPrice !== undefined) {
+//       where.price = {
+//         ...where.price,
+//         lte: maxPrice,
+//       }
+//     }
 
-    let orderBy: any = { createdAt: "desc" }
+//     let orderBy: any = { createdAt: "desc" }
 
-    if (sort === "price-asc") {
-      orderBy = { price: "asc" }
-    } else if (sort === "price-desc") {
-      orderBy = { price: "desc" }
-    } else if (sort === "rating") {
-      orderBy = { rating: "desc" }
-    } else if (sort === "popularity") {
-      orderBy = { reviewCount: "desc" }
-    }
+//     if (sort === "price-asc") {
+//       orderBy = { price: "asc" }
+//     } else if (sort === "price-desc") {
+//       orderBy = { price: "desc" }
+//     } else if (sort === "rating") {
+//       orderBy = { rating: "desc" }
+//     } else if (sort === "popularity") {
+//       orderBy = { reviewCount: "desc" }
+//     }
 
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        orderBy,
-        take: limit,
-        skip: offset,
-        include: {
-          category: true,
-          brand: true,
-          sizes: true,
-          colors: true,
-        },
-      }),
-      prisma.product.count({ where }),
-    ])
+//     const [products, total] = await Promise.all([
+//       prisma.product.findMany({
+//         where,
+//         orderBy,
+//         take: limit,
+//         skip: offset,
+//         include: {
+//           category: true,
+//           brand: true,
+//           sizes: true,
+//           colors: true,
+//         },
+//       }),
+//       prisma.product.count({ where }),
+//     ])
 
-    return {
-      products,
-      total,
-      pageCount: Math.ceil(total / limit),
-      currentPage: Math.floor(offset / limit) + 1,
-    }
-  })
+//     return {
+//       products,
+//       total,
+//       pageCount: Math.ceil(total / limit),
+//       currentPage: Math.floor(offset / limit) + 1,
+//     }
+//   })
+// }
+export async function getProducts({
+  categoryId,
+  searchQuery,
+  limit = 24,
+  offset = 0,
+}: {
+  categoryId?: string
+  searchQuery?: string
+  limit?: number
+  offset?: number
+}) {
+  const [products, count] = await prisma.$transaction([
+    prisma.product.findMany({
+      where: {
+        AND: [
+          categoryId ? { categoryId } : {},
+          searchQuery ? {
+            OR: [
+              { name: { contains: searchQuery, mode: 'insensitive' } },
+              { description: { contains: searchQuery, mode: 'insensitive' } },
+            ],
+          } : {},
+        ],
+      },
+      take: limit,
+      skip: offset,
+      include: {
+        category: true,
+        brand: true,
+      },
+    }),
+    prisma.product.count({
+      where: {
+        AND: [
+          categoryId ? { categoryId } : {},
+          searchQuery ? {
+            OR: [
+              { name: { contains: searchQuery, mode: 'insensitive' } },
+              { description: { contains: searchQuery, mode: 'insensitive' } },
+            ],
+          } : {},
+        ],
+      },
+    }),
+  ])
+
+  return { products, count }
 }
-
 // Get a single product with caching
 export async function getProduct(id: string) {
   return getCachedProduct(id, async () => {
@@ -398,6 +445,22 @@ export async function getRelatedProducts(productId: string, categoryId: string, 
 
 // Cart
 export async function getCart(userId: string) {
+  // 1. First, check if the user exists
+  const userExists = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!userExists) {
+    // Handle the error:  The user doesn't exist.  You might want to:
+    //    -  Create the user first.
+    //    -  Return an error to the client.
+    //    -  Throw an exception.
+    console.error(`User with ID ${userId} not found.`);
+    //  Important:  You MUST handle this error.  Here's a basic example that returns an error:
+    return null; // Or throw an error, or create a new user.  This is CRITICAL.
+  }
+
+  // 2. Now, get the cart.
   let cart = await prisma.cart.findUnique({
     where: { userId },
     include: {
@@ -412,8 +475,9 @@ export async function getCart(userId: string) {
         },
       },
     },
-  })
+  });
 
+  // 3. Create the cart if it doesn't exist
   if (!cart) {
     cart = await prisma.cart.create({
       data: { userId },
@@ -429,11 +493,12 @@ export async function getCart(userId: string) {
           },
         },
       },
-    })
+    });
   }
 
-  return cart
+  return cart;
 }
+
 
 export async function addToCart(
   userId: string,

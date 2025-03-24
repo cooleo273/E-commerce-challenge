@@ -2,49 +2,55 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
 interface MainNavProps {
   className?: string
 }
 
+interface Category {
+  id: string
+  name: string
+}
+
 export function MainNav({ className }: MainNavProps) {
   const pathname = usePathname()
+  const [categories, setCategories] = useState<Category[]>([])
 
-  const routes = [
-    { href: "/", label: "Women" },
-    { href: "/men", label: "Men" },
-    { href: "/kids", label: "Kids" },
-    { href: "/sports", label: "Sports" },
-    { href: "/brands", label: "Brands" },
-    { href: "/new", label: "New" },
-    { href: "/sale", label: "Sale" },
-  ]
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/api/categories')
+        const data = await response.json()
+        setCategories(data)
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      }
+    }
+
+    fetchCategories()
+  }, [])
 
   return (
     <nav className={cn("flex items-center space-x-6", className)}>
-      {routes.map((route) => {
-        const isActive =
-          route.href === "/" ? pathname === "/" : pathname === route.href || pathname.startsWith(`${route.href}/`)
+      {categories.map((category) => {
+        const href = `/categories/${category.name.toLowerCase()}`
+        const isActive = pathname === href || pathname.startsWith(`${href}/`)
 
         return (
           <Link
-            key={route.href}
-            href={route.href}
+            key={category.id}
+            href={href}
             className={cn(
               "text-sm font-medium transition-colors hover:text-primary",
-              isActive
-                ? "text-primary"
-                : route.href === "/sale"
-                  ? "text-red-500 hover:text-red-600"
-                  : "text-muted-foreground",
+              isActive ? "text-primary" : "text-muted-foreground"
             )}
           >
-            {route.label}
+            {category.name}
           </Link>
         )
       })}
     </nav>
   )
 }
-

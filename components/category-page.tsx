@@ -1,3 +1,5 @@
+
+// Remove "use client" since we'll handle data fetching in the parent
 import { Suspense } from "react"
 import Link from "next/link"
 import { ShoppingCart, Heart, Filter, SlidersHorizontal } from "lucide-react"
@@ -5,14 +7,16 @@ import { Button } from "@/components/ui/button"
 import { MainNav } from "@/components/main-nav"
 import { ProductGrid } from "@/components/product-grid"
 import { CategoryFilter } from "@/components/category-filter"
+import { PageMainNav } from "./page-main-nav"
 
 interface CategoryPageProps {
   title: string
-  description?: string
+  description: string
   category: string
+  products: any[] // Add products prop
 }
 
-export function CategoryPage({ title, description, category }: CategoryPageProps) {
+export function CategoryPage({ title, description, category, products }: CategoryPageProps) {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b">
@@ -21,6 +25,7 @@ export function CategoryPage({ title, description, category }: CategoryPageProps
             BR<span className="text-primary">.</span>
           </Link>
           <MainNav className="mx-6" />
+          <PageMainNav/>
           <div className="ml-auto flex items-center space-x-4">
             <Link href="/favorites">
               <Button variant="ghost" size="icon">
@@ -85,9 +90,7 @@ export function CategoryPage({ title, description, category }: CategoryPageProps
                 <CategoryFilter />
               </div>
               <div className="md:col-span-3">
-                <Suspense fallback={<div>Loading products...</div>}>
-                  <ProductGrid category={category} />
-                </Suspense>
+                <ProductGrid products={products} /> {/* Pass products directly */}
               </div>
             </div>
           </div>
