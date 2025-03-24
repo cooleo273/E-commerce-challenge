@@ -17,6 +17,13 @@ export async function POST(request: Request) {
     // Get cart to calculate total
     const cart = await getCart(session.id)
 
+    if (!cart) {
+      return NextResponse.json(
+        { error: "Cart not found" },
+        { status: 404 }
+      )
+    }
+
     // Calculate total
     const subtotal = cart.items.reduce((sum: number, item: CartItem) => {
       const price = item.product.price * (1 - (item.product.discount || 0) / 100);
