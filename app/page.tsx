@@ -8,6 +8,7 @@ import { WishlistIcon } from "@/components/wishlist-icon"
 import { RecommendedProducts } from "@/components/recommended-products"
 import { Suspense } from "react"
 import { UserNav } from "@/components/user-nav"
+import { PageMainNav } from "@/components/page-main-nav"
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
             BR<span className="text-primary">.</span>
           </Link>
           <MainNav className="mx-6" />
+          <PageMainNav/>
           <div className="ml-auto flex items-center space-x-4">
             <WishlistIcon />
             <Link href="/cart">
