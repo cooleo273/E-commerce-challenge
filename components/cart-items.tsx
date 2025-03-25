@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Trash2, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,8 @@ import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
 import { generateTxRef } from "@/lib/chapa"
 
-export function CartItems() {
+// Create a separate component for the part that uses useSearchParams
+function CartItemsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isAuthenticated } = useAuth()
@@ -221,5 +222,14 @@ export function CartItems() {
         </div>
       </div>
     </>
+  )
+}
+
+// Main component that wraps the content in Suspense
+export function CartItems() {
+  return (
+    <Suspense fallback={<div>Loading cart...</div>}>
+      <CartItemsContent />
+    </Suspense>
   )
 }
