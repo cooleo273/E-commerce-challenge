@@ -68,7 +68,6 @@ export async function PUT(request: Request) {
 // DELETE /api/brands
 export async function DELETE(request: Request) {
   try {
-    // Check admin authorization using requireAdmin
     await requireAdmin()
 
     const { searchParams } = new URL(request.url)
@@ -81,6 +80,9 @@ export async function DELETE(request: Request) {
     await deleteBrand(id)
     return NextResponse.json({ success: true })
   } catch (error: any) {
+    if (error.message === "Brand not found") {
+      return NextResponse.json({ error: "Brand not found" }, { status: 404 })
+    }
     if (error.message === "Forbidden") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { MainNav } from "@/components/main-nav"
 import { ProductGrid } from "@/components/product-grid"
 import { CategoryFilter } from "@/components/category-filter"
-import { PageMainNav } from "@/components/page-main-nav"
 import { getProducts } from "@/lib/db"
 import { Suspense } from 'react'
 
@@ -21,7 +20,6 @@ export default async function ProductsPage() {
             BR<span className="text-primary">.</span>
           </Link>
           <MainNav className="mx-6" />
-          <PageMainNav/>
           <div className="ml-auto flex items-center space-x-4">
             <Link href="/favorites">
               <Button variant="ghost" size="icon">

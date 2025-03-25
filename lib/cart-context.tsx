@@ -211,26 +211,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   // Clear cart
-  const clearCart = async () => {
-    if (!isAuthenticated) {
-      throw new Error("You must be logged in to clear cart")
-    }
-
-    try {
-      const response = await fetch("/api/cart", {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to clear cart");
+  const clearCart = useCallback(async () => {
+    setItems([]);
+    // Clear from localStorage
+    localStorage.removeItem("cartItems");
+    
+    // If authenticated, clear cart in database
+    if (isAuthenticated) {
+      try {
+        // Use the existing DELETE endpoint with clear=true parameter
+        const response = await fetch("/api/cart?clear=true", {
+          method: "DELETE",
+        });
+        
+        if (!response.ok) {
+          throw new Error("Failed to clear cart in database");
+        }
+      } catch (error) {
+        console.error("Failed to clear cart in database:", error);
       }
-
-      setItems([]);
-    } catch (error) {
-      console.error("Error clearing cart:", error);
-      throw error;
     }
-  }
+  }, [isAuthenticated]);
 
   // Enhanced calculations
   const subtotal = items.reduce((sum, item) => 

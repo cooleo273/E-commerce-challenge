@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { MainNav } from "@/components/main-nav"
 import { ProductGrid } from "@/components/product-grid"
 import { CategoryFilter } from "@/components/category-filter"
-import { PageMainNav } from "./page-main-nav"
+
 
 interface CategoryPageProps {
   title: string
@@ -25,7 +25,7 @@ export function CategoryPage({ title, description, category, products }: Categor
             BR<span className="text-primary">.</span>
           </Link>
           <MainNav className="mx-6" />
-          <PageMainNav/>
+
           <div className="ml-auto flex items-center space-x-4">
             <Link href="/favorites">
               <Button variant="ghost" size="icon">

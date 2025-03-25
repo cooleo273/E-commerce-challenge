@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Trash2, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,10 +13,21 @@ import { generateTxRef } from "@/lib/chapa"
 
 export function CartItems() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, isAuthenticated } = useAuth()
-  const { items, updateItemQuantity, removeItem, subtotal, total } = useCart()
+  const { items, updateItemQuantity, removeItem, subtotal, total, clearCart } = useCart()
   const [isLoading, setIsLoading] = useState(false)
   const shipping = subtotal > 100 ? 0 : 10
+  
+  // Check for payment success parameter
+  const paymentSuccess = searchParams.get("payment_success")
+  
+  // Clear cart if payment was successful
+  useEffect(() => {
+    if (paymentSuccess === "true") {
+      clearCart();
+    }
+  }, [paymentSuccess, clearCart]);
 
   const handleCheckout = async () => {
     if (!isAuthenticated) {
@@ -49,6 +60,10 @@ export function CartItems() {
         throw new Error(data.message || "Failed to initialize payment")
       }
 
+      // Store the cart state in localStorage before redirecting
+      localStorage.setItem("pendingPayment", "true")
+      
+      // Redirect to Chapa checkout
       window.location.href = data.checkoutUrl
     } catch (error) {
       console.error("Checkout error:", error)

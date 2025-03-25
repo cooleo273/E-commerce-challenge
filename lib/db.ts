@@ -336,10 +336,15 @@ export async function createCategory(name: string) {
 }
 
 export async function updateCategory(id: string, name: string) {
-  return prisma.category.update({
+  const category = await prisma.category.update({
     where: { id },
     data: { name },
   })
+
+  // Invalidate the categories cache
+  invalidateCategoryCache()
+
+  return category
 }
 
 export async function deleteCategory(id: string) {
@@ -381,9 +386,26 @@ export async function updateBrand(id: string, data: { name?: string; logo?: stri
 }
 
 export async function deleteBrand(id: string) {
-  await prisma.brand.delete({
-    where: { id },
-  })
+  try {
+    // First check if brand exists
+    const brand = await prisma.brand.findUnique({
+      where: { id },
+    })
+
+    if (!brand) {
+      throw new Error("Brand not found")
+    }
+
+    // If brand exists, delete it
+    await prisma.brand.delete({
+      where: { id },
+    })
+  } catch (error) {
+    if (error instanceof Error && error.message === "Brand not found") {
+      throw error
+    }
+    throw new Error("Failed to delete brand")
+  }
 }
 
 // Sizes

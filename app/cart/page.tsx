@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { MainNav } from "@/components/main-nav"
-import { PageMainNav } from "@/components/page-main-nav"
+
 import { CartItems } from "@/components/cart-items"
 
 export default function CartPage() {
@@ -12,7 +12,7 @@ export default function CartPage() {
             BR<span className="text-black">.</span>
           </Link>
           <MainNav className="mx-6" />
-          <PageMainNav/>
+          
         </div>
       </header>
 

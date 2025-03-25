@@ -77,6 +77,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
+// From your existing route.ts file
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getSession()

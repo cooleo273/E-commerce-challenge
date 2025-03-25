@@ -1,16 +1,12 @@
 "use client"
-
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { ShoppingBag, Trash2, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { MainNav } from "@/components/main-nav"
 import { useWishlist } from "@/lib/wishlist-context"
 import { useCart } from "@/lib/cart-context"
 import { getProductById } from "@/lib/products"
 import { useToast } from "@/hooks/use-toast"
-import { PageMainNav } from "@/components/page-main-nav"
+
 import { WishlistItems } from "@/components/wishlist-items"
 
 // Define the interface for wishlist items
@@ -113,7 +109,7 @@ export default function FavoritesPage() {
             BR<span className="text-primary">.</span>
           </Link>
           <MainNav className="mx-6" />
-          <PageMainNav/>
+          
         </div>
       </header>
 
