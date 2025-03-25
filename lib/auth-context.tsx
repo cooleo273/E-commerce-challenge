@@ -26,6 +26,32 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // Add session caching
+  const [sessionChecked, setSessionChecked] = useState(false)
+
+  useEffect(() => {
+    if (sessionChecked) return
+
+    async function checkSession() {
+      try {
+        const response = await fetch('/api/auth/session')
+        const data = await response.json()
+        
+        if (data && data.role === 'ADMIN') {
+          setIsAuthenticated(true)
+          setUser(data)
+        }
+      } catch (error) {
+        console.error('Session check failed:', error)
+      } finally {
+        setSessionChecked(true)
+        setIsLoading(false)
+      }
+    }
+  
+    checkSession()
+  }, [sessionChecked])
+
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
