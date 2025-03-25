@@ -136,7 +136,10 @@ export default function Home() {
         {/* Recommended Products Section */}
         <section className="py-16 bg-muted/30">
           <div className="container mx-auto px-4">
-            <RecommendedProducts />
+            <h2 className="text-3xl font-bold text-center mb-12">Recommended For You</h2>
+            <Suspense>
+              <RecommendedProducts />
+            </Suspense>
           </div>
         </section>
 
